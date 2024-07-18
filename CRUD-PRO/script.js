@@ -56,7 +56,7 @@ function mettreAjourIdee(libelle, categorie, description) {
     const index = selectionCarte.dataset.index;
     idees[index] = { libelle, categorie, description, status: selectionCarte.querySelector('.badge').textContent };
     saveIdeesToLocalStorage(idees);
-
+  
     // Actualiser la liste des idées sur la page
     chargerIdees();
   }
@@ -105,21 +105,25 @@ function ajouterIdee(libelle, categorie, description, status = 'en attente', ind
 // Événement pour le formulaire d'ajout d'idée
 document.querySelector('#idee-formulaire').addEventListener("submit", (e) => {
   e.preventDefault();
+
   const libelle = document.querySelector("#libelle").value;
   const description = document.querySelector("#description").value;
   const categorie = document.querySelector("#categorie").value;
+
   // validation description 
   if (description.length > 255 || description.length <= 5) {
     montrerAlert('La description ne doit pas être supérieure à 255 lettres', 'danger');
   } else {
     compteurValidation++;
   }
+
   // validation categorie
   if (categorie === "") {
     montrerAlert('La catégorie ne doit pas être vide', 'danger');
   } else {
     compteurValidation++;
   }
+
   var nomRegex = /^[a-zA-Z ]+$/;
   // validation titre
   if (libelle.length <= 7 || !nomRegex.test(libelle)) {
@@ -127,6 +131,7 @@ document.querySelector('#idee-formulaire').addEventListener("submit", (e) => {
   } else {
     compteurValidation++;
   }
+
   if (compteurValidation < 3) {
     montrerAlert('Remplisser correctement', 'dark');
     compteurValidation = 0;
@@ -148,10 +153,15 @@ document.querySelector("#allIdee").addEventListener("click", (e) => {
   const target = e.target;
 
   if (target.closest(".edit")) {
-    selectionCarte = target.closest('.col-4');
+    selectionCarte = target.closest('.col-4');/*
     document.querySelector("#libelle").value = selectionCarte.querySelector(".card-header p").textContent;
     document.querySelector("#categorie").value = selectionCarte.querySelector(".card-body p:nth-child(2)").textContent;
-    document.querySelector("#description").value = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;
+    document.querySelector("#description").value = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;*/
+
+        // Remplir le formulaire avec les données de l'idée sélectionnée
+        document.querySelector("#libelle").value = selectionCarte.querySelector(".card-header h4").textContent;
+        document.querySelector("#categorie").value = selectionCarte.querySelector(".card-body p:nth-child(2)").textContent;
+        document.querySelector("#description").value = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;
   } else if (target.closest(".delete")) {
     const index = target.closest('.col-4').dataset.index;
     target.closest('.col-4').remove();
@@ -209,30 +219,33 @@ function chargerIdees() {
   // Gestionnaire d'événements pour les boutons Edit, Delete, Approuver et Désapprouver
 document.querySelector("#allIdee").addEventListener("click", (e) => {
     const target = e.target;
-  if (target.closest(".delete")) {
+  
+   if (target.closest(".edit")) {
+      // Votre code pour l'édition d'une idée
+    } else  if (target.closest(".delete")) {
       // Votre code pour supprimer une idée
     } else  if (target.closest(".approve")) {
-      approuverIdee(target);
-      // Appeler la fonction d'approbation avec le bouton cliqué comme argument
+      approuverIdee(target); // Appeler la fonction d'approbation avec le bouton cliqué comme argument
     } else if (target.closest(".disapprove")) {
-      desapprouverIdee(target); 
-      // Appeler la fonction de désapprobation avec le bouton cliqué comme argument
+      desapprouverIdee(target); // Appeler la fonction de désapprobation avec le bouton cliqué comme argument
     }
    
   });
   
   function approuverIdee(target) {
-    const cardContainer = target.closest('.col-4'); 
-    // Conteneur parent de la carte
+    const cardContainer = target.closest('.col-4'); // Conteneur parent de la carte
     const statusBadge = cardContainer.querySelector('.badge');
     statusBadge.textContent = "Approuvée";
     statusBadge.classList.remove("bg-secondary");
     statusBadge.classList.add('bg-success');
+    
+  
     // Cacher les boutons Approuver et Désapprouver
     cacherBoutons(cardContainer);
+  
     // Modifier la couleur de la bordure du conteneur parent
-    cardContainer.style.borderColor = 'green'; 
-    // Exemple de couleur de bordure verte pour approbation
+    cardContainer.style.borderColor = 'green'; // Exemple de couleur de bordure verte pour approbation
+  
     const idees = getIdeesFromLocalStorage();
     const index = cardContainer.dataset.index;
     idees[index].status = 'Approuvée';
@@ -240,17 +253,17 @@ document.querySelector("#allIdee").addEventListener("click", (e) => {
   }
   
   function desapprouverIdee(target) {
-    const cardContainer = target.closest('.col-4'); 
-    // Conteneur parent de la carte
+    const cardContainer = target.closest('.col-4'); // Conteneur parent de la carte
     const statusBadge = cardContainer.querySelector('.badge');
     statusBadge.textContent = "Désapprouvée";
     statusBadge.classList.remove("bg-secondary");
     statusBadge.classList.add('bg-danger');
+  
     // Cacher les boutons Approuver et Désapprouver
     cacherBoutons(cardContainer);
+  
     // Modifier la couleur de la bordure du conteneur parent
-    cardContainer.style.borderColor = 'red';
-     // Exemple de couleur de bordure rouge pour désapprobation
+    cardContainer.style.borderColor = 'red'; // Exemple de couleur de bordure rouge pour désapprobation
     const idees = getIdeesFromLocalStorage();
     const index = cardContainer.dataset.index;
     idees[index].status = 'Désapprouvée';
