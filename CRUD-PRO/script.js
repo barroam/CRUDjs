@@ -1,8 +1,7 @@
-
 let selectionCarte = null;
-var compteurValidation = 0;
+let compteurValidation = 0;
 
-// Fonction pour montrer l'alerte
+// Fonction pour afficher une alerte
 function montrerAlert(message, className) {
   const div = document.createElement("div");
   div.className = `alert alert-${className}`;
@@ -12,7 +11,7 @@ function montrerAlert(message, className) {
   setTimeout(() => div.remove(), 5000);
 }
 
-// Effacer les données
+// Effacer les données du formulaire
 function effacerDonnees() {
   document.querySelector("#libelle").value = "";
   document.querySelector("#categorie").value = "";
@@ -29,40 +28,72 @@ function saveIdeesToLocalStorage(idees) {
   localStorage.setItem('idees', JSON.stringify(idees));
 }
 
-// Charger les idées depuis le localStorage
+// Charger les idées depuis le localStorage et les afficher sur la page
 function chargerIdees() {
   const listIdees = document.querySelector("#allIdee");
-  listIdees.innerHTML = '';  // Clear existing ideas
+  listIdees.innerHTML = '';  // Efface les idées existantes
   const idees = getIdeesFromLocalStorage();
-  idees.forEach((idee, index) => ajouterIdee(idee.libelle, idee.categorie, idee.description, idee.status, index));
+  idees.forEach((idee, index) => {
+    ajouterIdee(idee.libelle, idee.categorie, idee.description, idee.status, index);
+    const cardContainer = listIdees.querySelector(`[data-index="${index}"]`);
+    const statusBadge = cardContainer.querySelector('.badge');
+    const statusapprove = cardContainer.querySelector('.approve');
+    const statusdisapprove = cardContainer.querySelector('.disapprove');
+    const couleurTitre = cardContainer.querySelector('.card-header');
+    // Mettre à jour le badge de statut et les boutons en fonction de l'état de l'idée
+    switch (idee.status) {
+      case 'Approuvée':
+        statusBadge.textContent = "Approuvée";
+        statusBadge.classList.remove("bg-secondary");
+        statusBadge.classList.add('bg-success');
+        cardContainer.style.borderColor = 'green';
+        statusapprove.style.display = 'none'; // Cacher le bouton Approuver
+        statusdisapprove.style.display = 'none'; // Cacher le bouton Désapprouver
+        couleurTitre.classList.remove('bg-dark');
+        couleurTitre.classList.add('bg-success');
+        break;
+      case 'Désapprouvée':
+        statusBadge.textContent = "Désapprouvée";
+        statusBadge.classList.remove("bg-secondary");
+        statusBadge.classList.add('bg-danger');
+        cardContainer.style.borderColor = 'red';
+        statusapprove.style.display = 'none'; // Cacher le bouton Approuver
+        statusdisapprove.style.display = 'none'; // Cacher le bouton Désapprouver
+        couleurTitre.classList.remove('bg-dark');
+        couleurTitre.classList.add('bg-danger');
+        break;
+      default:
+        break;
+    }
+  });
 }
 
+// Fonction pour mettre à jour une idée
 function mettreAjourIdee(libelle, categorie, description) {
-    // Vérifier si les données sont différentes de l'idée existante
-    const existingLibelle = selectionCarte.querySelector(".card-header p").textContent;
-    const existingCategorie = selectionCarte.querySelector(".card-body p:nth-child(2)").textContent;
-    const existingDescription = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;
-  
-    if (libelle !== existingLibelle || categorie !== existingCategorie || description !== existingDescription) {
-      compteurValidation = 0; // Réinitialiser le compteur d'approbation
-    }
-  
-    selectionCarte.querySelector(".card-header p").textContent = libelle;
-    selectionCarte.querySelector(".card-body p:nth-child(2)").textContent = categorie;
-    selectionCarte.querySelector(".card-body p:nth-child(4)").textContent = description;
-    montrerAlert("L'idée est mise à jour", "success");
-  
-    const idees = getIdeesFromLocalStorage();
-    const index = selectionCarte.dataset.index;
-    idees[index] = { libelle, categorie, description, status: selectionCarte.querySelector('.badge').textContent };
-    saveIdeesToLocalStorage(idees);
-  
-    // Actualiser la liste des idées sur la page
-    chargerIdees();
-  }
-  
+  // Vérifier si les données sont différentes de l'idée existante
+  const existingLibelle = selectionCarte.querySelector(".card-header h4").textContent;
+  const existingCategorie = selectionCarte.querySelector(".card-body p:nth-child(2)").textContent;
+  const existingDescription = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;
 
-// Ajouter une idée
+  if (libelle !== existingLibelle || categorie !== existingCategorie || description !== existingDescription) {
+    compteurValidation = 0; // Réinitialiser le compteur de validation
+  }
+
+  selectionCarte.querySelector(".card-header h4").textContent = libelle;
+  selectionCarte.querySelector(".card-body p:nth-child(2)").textContent = categorie;
+  selectionCarte.querySelector(".card-body p:nth-child(4)").textContent = description;
+  montrerAlert("L'idée est mise à jour", "success");
+
+  const idees = getIdeesFromLocalStorage();
+  const index = selectionCarte.dataset.index;
+  idees[index] = { libelle, categorie, description, status: selectionCarte.querySelector('.badge').textContent };
+  saveIdeesToLocalStorage(idees);
+
+  // Actualiser la liste des idées sur la page
+  chargerIdees();
+}
+
+// Fonction pour ajouter une idée
 function ajouterIdee(libelle, categorie, description, status = 'en attente', index = null) {
   const listIdees = document.querySelector("#allIdee");
   const ideeIndex = index !== null ? index : getIdeesFromLocalStorage().length;
@@ -102,7 +133,7 @@ function ajouterIdee(libelle, categorie, description, status = 'en attente', ind
   }
 }
 
-// Événement pour le formulaire d'ajout d'idée
+// Événement pour le formulaire d'ajout ou d'édition d'idée
 document.querySelector('#idee-formulaire').addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -110,59 +141,59 @@ document.querySelector('#idee-formulaire').addEventListener("submit", (e) => {
   const description = document.querySelector("#description").value;
   const categorie = document.querySelector("#categorie").value;
 
-  // validation description 
+  // Validation de la description
   if (description.length > 255 || description.length <= 5) {
-    montrerAlert('La description ne doit pas être supérieure à 255 lettres', 'danger');
+    montrerAlert('La description doit être entre 5 et 255 caractères', 'danger');
   } else {
     compteurValidation++;
   }
 
-  // validation categorie
+  // Validation de la catégorie
   if (categorie === "") {
-    montrerAlert('La catégorie ne doit pas être vide', 'danger');
+    montrerAlert('La catégorie ne peut pas être vide', 'danger');
   } else {
     compteurValidation++;
   }
 
-  var nomRegex = /^[a-zA-Z ]+$/;
-  // validation titre
+  // Validation du libellé
+  const nomRegex = /^[a-zA-Z ]+$/;
   if (libelle.length <= 7 || !nomRegex.test(libelle)) {
-    montrerAlert('Le titre doit être plus de 7 lettres et composé uniquement de lettres', 'danger');
+    montrerAlert('Le titre doit être composé uniquement de lettres et avoir plus de 7 caractères', 'danger');
   } else {
     compteurValidation++;
   }
 
+  // Si la validation est réussie, ajouter ou mettre à jour l'idée
   if (compteurValidation < 3) {
-    montrerAlert('Remplisser correctement', 'dark');
+    montrerAlert('Remplissez correctement tous les champs', 'dark');
     compteurValidation = 0;
   } else {
     if (selectionCarte === null) {
       ajouterIdee(libelle, categorie, description);
       montrerAlert("L'ajout d'idée a réussi", 'success');
-      compteurValidation = 0;
     } else {
       mettreAjourIdee(libelle, categorie, description);
-      selectionCarte = null;
+      selectionCarte = null; // Réinitialiser la sélection
     }
-    effacerDonnees();
+    effacerDonnees(); // Effacer le formulaire après ajout ou mise à jour
+    compteurValidation = 0; // Réinitialiser le compteur de validation
   }
 });
 
-// Gestionnaire d'événements pour les boutons Edit, Delete
+// Gestionnaire d'événements pour les boutons Edit, Delete, Approuver et Désapprouver
 document.querySelector("#allIdee").addEventListener("click", (e) => {
   const target = e.target;
 
   if (target.closest(".edit")) {
-    selectionCarte = target.closest('.col-4');/*
-    document.querySelector("#libelle").value = selectionCarte.querySelector(".card-header p").textContent;
-    document.querySelector("#categorie").value = selectionCarte.querySelector(".card-body p:nth-child(2)").textContent;
-    document.querySelector("#description").value = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;*/
+    // Sélectionner le conteneur parent .col-4 pour l'édition
+    selectionCarte = target.closest('.col-4');
 
-        // Remplir le formulaire avec les données de l'idée sélectionnée
-        document.querySelector("#libelle").value = selectionCarte.querySelector(".card-header h4").textContent;
-        document.querySelector("#categorie").value = selectionCarte.querySelector(".card-body p:nth-child(2)").textContent;
-        document.querySelector("#description").value = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;
+    // Remplir le formulaire avec les données de l'idée sélectionnée
+    document.querySelector("#libelle").value = selectionCarte.querySelector(".card-header h4").textContent;
+    document.querySelector("#categorie").value = selectionCarte.querySelector(".card-body p:nth-child(2)").textContent;
+    document.querySelector("#description").value = selectionCarte.querySelector(".card-body p:nth-child(4)").textContent;
   } else if (target.closest(".delete")) {
+    // Supprimer l'idée et la retirer du localStorage
     const index = target.closest('.col-4').dataset.index;
     target.closest('.col-4').remove();
     montrerAlert("L'idée a été supprimée", "danger");
@@ -172,113 +203,45 @@ document.querySelector("#allIdee").addEventListener("click", (e) => {
     saveIdeesToLocalStorage(idees);
 
     // Recharger les idées pour mettre à jour les index
-    document.querySelector("#allIdee").innerHTML = '';
     chargerIdees();
-  }
-});
-// Charger les idées depuis le localStorage
-function chargerIdees() {
-    const listIdees = document.querySelector("#allIdee");
-    listIdees.innerHTML = '';  // Efface les idées existantes
-    const idees = getIdeesFromLocalStorage();
-    idees.forEach((idee, index) => {
-      ajouterIdee(idee.libelle, idee.categorie, idee.description, idee.status, index);
-      const cardContainer = listIdees.querySelector(`[data-index="${index}"]`);
-      const statusBadge = cardContainer.querySelector('.badge');
-      const statusapprove = cardContainer.querySelector('.approve');
-      const statusdisapprove = cardContainer.querySelector('.disapprove');
-      const couleurTitre =cardContainer.querySelector('.card-header');
-      // Met à jour le badge de statut et les boutons en fonction de l'état de l'idée
-      switch (idee.status) {
-        case 'Approuvée':
-          statusBadge.textContent = "Approuvée";
-          statusBadge.classList.remove("bg-secondary");
-          statusBadge.classList.add('bg-success');
-          cardContainer.style.borderColor = 'green';
-          statusapprove.style.display = 'none'; // Cache le bouton Approuver
-          statusdisapprove.style.display = 'none'; // Cache le bouton Désapprouver
-          couleurTitre.classList.remove('bg-dark');
-          couleurTitre.classList.add('bg-success');
-          break;
-        case 'Désapprouvée':
-          statusBadge.textContent = "Désapprouvée";
-          statusBadge.classList.remove("bg-secondary");
-          statusBadge.classList.add('bg-danger');
-          cardContainer.style.borderColor = 'red';
-          statusapprove.style.display = 'none'; // Cache le bouton Approuver
-          statusdisapprove.style.display = 'none'; // Cache le bouton Désapprouver
-          couleurTitre.classList.remove('bg-dark');
-          couleurTitre.classList.add('bg-danger');
-          break;
-        default:
-          break;
-      }
-    });
-  }
-  
-  // Gestionnaire d'événements pour les boutons Edit, Delete, Approuver et Désapprouver
-document.querySelector("#allIdee").addEventListener("click", (e) => {
-    const target = e.target;
-  
-   if (target.closest(".edit")) {
-      // Votre code pour l'édition d'une idée
-    } else  if (target.closest(".delete")) {
-      // Votre code pour supprimer une idée
-    } else  if (target.closest(".approve")) {
-      approuverIdee(target); // Appeler la fonction d'approbation avec le bouton cliqué comme argument
-    } else if (target.closest(".disapprove")) {
-      desapprouverIdee(target); // Appeler la fonction de désapprobation avec le bouton cliqué comme argument
-    }
-   
-  });
-  
-  function approuverIdee(target) {
-    const cardContainer = target.closest('.col-4'); // Conteneur parent de la carte
-    const statusBadge = cardContainer.querySelector('.badge');
-    statusBadge.textContent = "Approuvée";
-    statusBadge.classList.remove("bg-secondary");
-    statusBadge.classList.add('bg-success');
-    
-  
-    // Cacher les boutons Approuver et Désapprouver
-    cacherBoutons(cardContainer);
-  
-    // Modifier la couleur de la bordure du conteneur parent
-    cardContainer.style.borderColor = 'green'; // Exemple de couleur de bordure verte pour approbation
-  
+  } else if (target.closest(".approve")) {
+    // Approuver l'idée
+    const cardContainer = target.closest('.col-4');
+    cardContainer.querySelector('.badge').textContent = 'Approuvée';
+    cardContainer.querySelector('.badge').classList.remove("bg-secondary");
+    cardContainer.querySelector('.badge').classList.add('bg-success');
+    cardContainer.style.borderColor = 'green';
+    cardContainer.querySelector('.edit').style.display = 'none'; // Cacher le bouton Edit
+    cardContainer.querySelector('.delete').style.display = 'none'; // Cacher le bouton Delete
+    montrerAlert("L'idée a été approuvée", "success");
+
     const idees = getIdeesFromLocalStorage();
     const index = cardContainer.dataset.index;
     idees[index].status = 'Approuvée';
     saveIdeesToLocalStorage(idees);
-  }
-  
-  function desapprouverIdee(target) {
-    const cardContainer = target.closest('.col-4'); // Conteneur parent de la carte
-    const statusBadge = cardContainer.querySelector('.badge');
-    statusBadge.textContent = "Désapprouvée";
-    statusBadge.classList.remove("bg-secondary");
-    statusBadge.classList.add('bg-danger');
-  
-    // Cacher les boutons Approuver et Désapprouver
-    cacherBoutons(cardContainer);
-  
-    // Modifier la couleur de la bordure du conteneur parent
-    cardContainer.style.borderColor = 'red'; // Exemple de couleur de bordure rouge pour désapprobation
+
+    // Recharger les idées pour mettre à jour les statuts
+    chargerIdees();
+  } else if (target.closest(".disapprove")) {
+    // Désapprouver l'idée
+    const cardContainer = target.closest('.col-4');
+    cardContainer.querySelector('.badge').textContent = 'Désapprouvée';
+    cardContainer.querySelector('.badge').classList.remove("bg-secondary");
+    cardContainer.querySelector('.badge').classList.add('bg-danger');
+    cardContainer.style.borderColor = 'red';
+    cardContainer.querySelector('.edit').style.display = 'none'; // Cacher le bouton Edit
+    cardContainer.querySelector('.delete').style.display = 'none'; // Cacher le bouton Delete
+    montrerAlert("L'idée a été désapprouvée", "success");
+
     const idees = getIdeesFromLocalStorage();
     const index = cardContainer.dataset.index;
     idees[index].status = 'Désapprouvée';
     saveIdeesToLocalStorage(idees);
+
+    // Recharger les idées pour mettre à jour les statuts
+    chargerIdees();
   }
-  
-  
-  // Fonction pour cacher les boutons Approuver et Désapprouver après une action
-  function cacherBoutons(cardContainer) {
-    cardContainer.querySelector(".approve").style.display = 'none';
-    cardContainer.querySelector(".disapprove").style.display = 'none';
-  }
-  
-  // Charger les idées lorsque la page est chargée
-  document.addEventListener("DOMContentLoaded", () => {
-    chargerIdees(); 
-  });
-  
+});
+
+// Charger les idées au chargement initial de la page
+document.addEventListener('DOMContentLoaded', chargerIdees);
