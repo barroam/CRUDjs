@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Application CRUD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+  
+  <div class="container">
+    <div class="banner m-4 p-3 text-center rounded-2 text-dark" style="background-color: rgb(176, 191, 194);">
+        <h1 style="font-weight: bold">Boite à Idée</h1>
+    </div>
+  </div>
+  <div class="container mss">  </div>
+  <div class="container d-flex gap-4 p-2">
+    <!-- Canva image -->
+    <div style="width: 40%; background-repeat: no-repeat; background-size: cover; object-fit: cover;">
+      <div style="position: relative; width: 100%; height: 0; padding-top: 100%; overflow: hidden; border-radius: 8px; will-change: transform;">
+        <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0; margin: 0;"
+          src="https://www.canva.com/design/DAGKvj4Et74/7283QOoqnJ7QblyVfmwSYw/view?embed" allowfullscreen allow="fullscreen">
+        </iframe>
+      </div>
+    </div>
+    <!-- formulaire -->
+    <form id="idee-formulaire" class="row justify-content-center mb-4" style="width: 60%;" autocomplete="off">
+        <h2 class="bg-dark text-light rounded-2 p-2">Formulaire d'ajout d'idée</h2>
+        <div class="d-flex justify-content-between mb-4 gap-3">
+          <!-- libelle -->
+          <div class="col-6">
+            <label for="libelle"><h4>Titre du projet</h4></label>
+            <input type="text" id="libelle" class="form-control" placeholder="Entrez le titre du projet">
+          </div>
+          <!-- categorie -->
+          <div class="col-6">
+            <label for="categorie"><h4>Catégorie</h4></label>
+            <select name="categorie" id="categorie" class="form-control">
+              <option value="">Selectionner</option>
+              <option value="Sport">Sport</option>
+              <option value="Voyage">Voyage</option>
+              <option value="Santé">Santé</option>
+              <option value="Politique">Politique</option>
+            </select>
+          </div>
+        </div>
+        <!-- description -->
+        <div class="mb-3">
+          <label for="description"><h4>Description</h4></label>
+          <textarea name="description" id="description" placeholder="Entrez la description" class="form-control" rows="8"></textarea>
+        </div>
+        <div class="mb-3">
+          <input type="submit" value="Envoyer" class="btn btn-dark add-btn" style="width: 7rem;">
+        </div>
+    </form>
+  </div>
+
+  <!-- liste des cartes -->
+  <div id="allIdee" class="container d-flex flex-wrap gap-5 p-5 ">
+    <div class="d-flex text-center" style="height: 3rem;">
+        <h2>Listes des Idée</h2>
+    </div>
+  </div>
+  <div class="testebi"></div>
+  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
